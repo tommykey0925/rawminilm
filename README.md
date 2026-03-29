@@ -43,7 +43,7 @@ flowchart TD
 ### ② 数値の表を使って次の文字を予測する — `forward()`
 
 ```mermaid
-flowchart LR
+flowchart TD
     A["入力: 文字番号<br>例: 4 ('も')"]
     B["表1を引く<br>8個の数値を取り出す"]
     C["表2・表3で計算<br>かけ算と足し算"]
