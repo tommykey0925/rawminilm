@@ -160,7 +160,9 @@ class TinyLM:
     #
     # 実際に表の数値を直す式はこれだけ:
     #   新しい数値 = 今の数値 - 学習率 × 修正指示
-    # 「学習率」は一歩の大きさ。大きすぎると谷を飛び越える。小さすぎると進みが遅い。
+    # 「学習率」(lr) = 一度にどれだけ大きく直すかの設定値 (このコードでは 1.0)
+    # 「修正指示」(demb_weight等) = 上の「予測確率 - 正解」から計算してきた結果
+    # 例: 変換表の値が 0.30 で修正指示が 0.05 なら → 0.30 - 1.0×0.05 = 0.25
     def backward(self, probs: NDArrayFloat, Y: NDArrayInt, h: NDArrayFloat, X: NDArrayInt, lr: float) -> None:
         N = len(Y)
 
