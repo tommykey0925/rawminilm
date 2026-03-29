@@ -101,28 +101,14 @@ class TinyLM:
         logits: NDArrayFloat = np.dot(h, self.linear_weight) + self.linear_bias  # (13, 9)
 
         # --- 点数をパーセントに変換する ---
-        # ここまでで各文字の点数は出た。でも点数のままだと困る。
-        # 例: た=3.1, も=2.8 で「どっちが何%くらいありそう？」がわからない。
-        # マイナスの値もあるし、マイナスの確率は存在しない。
-        #
-        # そこで、数学的に「マイナスを含むどんな数値でも、全部正の数に変換して、
-        # 合計で割ればちゃんとした確率になる」ことが証明されている計算方法を使う。
-        #
-        # 手順:
-        #   1. まず全点数からいちばん大きい値を引く。
-        #      全部から同じ数を引いても比率は変わらないので結果に影響はないが、
-        #      この後の計算で数値が大きすぎて壊れるのを防げる。
+        # 点数のままだと「た=3.1, も=2.8」で何%ありそうか比べにくいし、
+        # マイナスの値もある。そこで、どんな数値でもパーセントに変換できる
+        # 数学の公式を使う (np.exp → 合計で割る)。
         max_val: NDArrayFloat = np.max(logits, axis=1, keepdims=True)
-        logits_shifted: NDArrayFloat = logits - max_val
-
-        #   2. np.exp(点数) で各点数を正の数に変換する。
-        #      これが「マイナスでも正にできる」ことが証明されている部分。
-        exp_logits: NDArrayFloat = np.exp(logits_shifted)  # (13, 9)
-
-        #   3. 全部足して、各値をその合計で割る → 合計がちょうど100%になる
+        logits_shifted: NDArrayFloat = logits - max_val  # 数値が大きすぎて壊れるのを防ぐ前処理
+        exp_logits: NDArrayFloat = np.exp(logits_shifted)  # 全部正の数に変換 (13, 9)
         sum_exp: NDArrayFloat = np.sum(exp_logits, axis=1, keepdims=True)  # (13, 1)
-        probs: NDArrayFloat = exp_logits / sum_exp  # (13, 9)
-        # これで probs が「各文字が次に来る確率」の予測になった。
+        probs: NDArrayFloat = exp_logits / sum_exp  # 合計で割って100%にする (13, 9)
 
         return probs, h
 
